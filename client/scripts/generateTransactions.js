@@ -64,7 +64,7 @@ const saveTransactionToDatabase = async (transaction) => {
 
       await saveTransactionToDatabase(receipt);
     } catch (error) {
-      //
+      //  TODO: add errorhnandling
     }
   }
 })();
