@@ -7,12 +7,16 @@ import {
   BrowserProvider,
   Signer,
 } from "ethers";
-
 import apolloClient from "../apollo/client";
 import { Actions } from "../types";
 import { SaveTransaction } from "../queries";
+type SendTransactionType = {
+  callback: (_hash: string) => void;
+  to: string;
+  amount: string;
+};
 
-function* sendTransaction() {
+function* sendTransaction({ callback, to, amount, sender }: any) {
   const provider = new JsonRpcProvider("http://localhost:8545"); //TODO: change this to base.
 
   // this could have been passed along in a more elegant fashion,
@@ -20,22 +24,16 @@ function* sendTransaction() {
   // @ts-ignore
   const walletProvider = new BrowserProvider(window.web3.currentProvider);
 
-  const signer: Signer = yield walletProvider.getSigner();
+  const signer: Signer = yield walletProvider.getSigner(sender);
 
   const accounts: Array<{ address: string }> = yield provider.listAccounts();
 
-  const randomAddress = () => {
-    const min = 1;
-    const max = 19;
-    const random = Math.round(Math.random() * (max - min) + min);
-    return accounts[random].address;
-  };
-
   const transaction = {
-    to: randomAddress(),
-    value: BigInt("1000000000000000000"),
+    to,
+    value: BigInt(amount),
   };
 
+  console.log("Transaction===========", transaction);
   try {
     const txResponse: TransactionResponse = yield signer.sendTransaction(
       transaction
@@ -61,9 +59,13 @@ function* sendTransaction() {
       mutation: SaveTransaction,
       variables,
     });
+
+    if (callback && receipt.hash) {
+      callback(receipt.hash);
+    }
   } catch (error) {
-    //
     console.log("ERROR TRANSACTION", error);
+    throw new Error('Couldn\'t process the transaction',);
   }
 }
 
