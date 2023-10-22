@@ -16,9 +16,10 @@ type SendTransactionType = {
   amount: string;
 };
 
-function* sendTransaction({ callback, to, amount, sender }: any) {
-  const provider = new JsonRpcProvider("http://localhost:8545"); //TODO: change this to base.
 
+
+function* sendTransaction({ callback, to, amount, sender }: any) {
+  const provider = new JsonRpcProvider("http://localhost:8545"); 
   // this could have been passed along in a more elegant fashion,
   // but for the purpouses of this scenario it's good enough
   // @ts-ignore
@@ -33,7 +34,6 @@ function* sendTransaction({ callback, to, amount, sender }: any) {
     value: BigInt(amount),
   };
 
-  console.log("Transaction===========", transaction);
   try {
     const txResponse: TransactionResponse = yield signer.sendTransaction(
       transaction

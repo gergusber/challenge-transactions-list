@@ -10,7 +10,16 @@ interface SingleTransactionProps {
 
 const SingleTransaction: React.FC<SingleTransactionProps> = ({ id }) => {
   const handleGoBack = () => navigate(`/transactions`);
-
+  function convertWeiToEth(weiValue: number, decimalPlaces: number =4): string {
+    // Convert WEI to ETH
+    const ethValue: number = weiValue / 10 ** 18;
+  
+    // Format the ETH value to the desired number of decimal places
+    const formattedEth: string = ethValue.toFixed(decimalPlaces);
+  
+    return formattedEth;
+  }
+  
   const { loading, error, data } = useQuery<SingleTransactionData>(
     GetSingleTransaction,
     { variables: { hash: id } },
@@ -37,7 +46,7 @@ const SingleTransaction: React.FC<SingleTransactionProps> = ({ id }) => {
   }
 
   const { hash, to, from, value } = data?.getTransaction || {};
-
+  const valueParsed = value ? convertWeiToEth(parseInt(value)) : 0;
   return (
     <div>
       <div className="flex flex-col mt-20">
@@ -55,7 +64,7 @@ const SingleTransaction: React.FC<SingleTransactionProps> = ({ id }) => {
           <p><span className="font-bold">Transaction Hash:</span> {hash}</p>
           <p><span className="font-bold">Sender Address:</span> {from}</p>
           <p><span className="font-bold">Recipient Address:</span> {to}</p>
-          <p><span className="font-bold">Amount:</span> {value} ETH</p>
+          <p><span className="font-bold">Amount:</span> {valueParsed} ETH</p>
         </div>
       </div>
     </div>

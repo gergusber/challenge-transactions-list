@@ -15,6 +15,16 @@ const TransactionList: React.FC = () => {
     }
   }, [data]);
 
+  function convertWeiToEth(weiValue: number, decimalPlaces: number =4): string {
+    // Convert WEI to ETH
+    const ethValue: number = weiValue / 10 ** 18;
+  
+    // Format the ETH value to the desired number of decimal places
+    const formattedEth: string = ethValue.toFixed(decimalPlaces);
+  
+    return formattedEth;
+  }
+
   const handleNavigate = (hash: string) => navigate(`/transaction/${hash}`);
 
   if (loading) {
@@ -44,8 +54,9 @@ const TransactionList: React.FC = () => {
           {!!transactions.length ? (
             <>
               {transactions.map(({ hash, to, from, value }) => (
+
                 <div key={hash} className="bg-white shadow-sm p-4 md:p-5 border rounded border-gray-300 mt-3 hover:border-blue-500 cursor-pointer" onClick={() => handleNavigate(hash)}>
-                  <span className="font-bold">{value} ETH</span> sent from <span className="font-bold">{from}</span> to <span className="font-bold">{to}</span>
+                  <span className="font-bold">{value? convertWeiToEth(parseInt(value)) : 0} ETH</span> sent from <span className="font-bold">{from}</span> to <span className="font-bold">{to}</span>
                 </div>
               ))}
             </>
