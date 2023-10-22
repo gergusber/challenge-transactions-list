@@ -4,7 +4,9 @@ import { useForm } from "react-hook-form";
 import { navigate } from "./NaiveRouter";
 import { Actions } from "../types";
 
-type propsTransactionSender = { sender: string };
+interface propsTransactionSender {
+  sender: string 
+}
 
 const SendTransaction: React.FC<propsTransactionSender> = ({ sender }) => {
   const dispatch = useDispatch();
@@ -18,7 +20,6 @@ const SendTransaction: React.FC<propsTransactionSender> = ({ sender }) => {
 
   const onSubmit = (data: any) => {
     console.log(data);
-    alert(JSON.stringify(form, null, 2));
     handleDispatch();
   };
 
@@ -145,7 +146,6 @@ const SendTransaction: React.FC<propsTransactionSender> = ({ sender }) => {
                 </button>
                 <button
                   type="submit"
-                  // onClick={handleDispatch}
                   className="py-3 px-4 inline-flex justify-center items-center gap-2 rounded-md border border-transparent font-semibold bg-blue-500 text-white hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all text-sm"
                 >
                   Send

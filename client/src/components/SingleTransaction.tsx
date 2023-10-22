@@ -1,38 +1,35 @@
-import React from 'react';
-import { useQuery } from '@apollo/client';
-import { GetSingleTransaction } from '../queries';
-import { SingleTransactionData } from '../types';
-import { navigate } from './NaiveRouter';
+import React from "react";
+import { useQuery } from "@apollo/client";
+import { GetSingleTransaction } from "../queries";
+import { SingleTransactionData } from "../types";
+import Loading from "./UI/Loading";
+import BackButton from "./UI/BackBtn";
 
 interface SingleTransactionProps {
   id: string | null;
 }
 
 const SingleTransaction: React.FC<SingleTransactionProps> = ({ id }) => {
-  const handleGoBack = () => navigate(`/transactions`);
-  function convertWeiToEth(weiValue: number, decimalPlaces: number =4): string {
+  function convertWeiToEth(
+    weiValue: number,
+    decimalPlaces: number = 4
+  ): string {
     // Convert WEI to ETH
     const ethValue: number = weiValue / 10 ** 18;
-  
+
     // Format the ETH value to the desired number of decimal places
     const formattedEth: string = ethValue.toFixed(decimalPlaces);
-  
+
     return formattedEth;
   }
-  
+
   const { loading, error, data } = useQuery<SingleTransactionData>(
     GetSingleTransaction,
-    { variables: { hash: id } },
+    { variables: { hash: id } }
   );
 
   if (loading) {
-    return (
-      <div className="flex flex-col mt-20">
-        <div className="max-w-[85rem] w-full mx-auto px-4 sm:flex sm:items-center sm:justify-between">
-          Loading...
-        </div>
-      </div>
-    );
+    return <Loading />;
   }
 
   if (error) {
@@ -46,25 +43,30 @@ const SingleTransaction: React.FC<SingleTransactionProps> = ({ id }) => {
   }
 
   const { hash, to, from, value } = data?.getTransaction || {};
+
   const valueParsed = value ? convertWeiToEth(parseInt(value)) : 0;
   return (
     <div>
       <div className="flex flex-col mt-20">
         <div className="max-w-[85rem] w-full mx-auto px-4 sm:flex sm:items-center sm:justify-between">
-          <div>
-            <button onClick={handleGoBack} type="button" className="py-3 px-4 inline-flex justify-center items-center gap-2 rounded-full border font-medium bg-white text-gray-700 shadow-sm align-middle hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-white focus:ring-blue-600 transition-all text-sm">
-              Go back
-            </button>
-          </div>
+          <BackButton />
         </div>
       </div>
       <div className="mt-20">
         <div className="max-w-[85rem] w-full mx-auto px-4">
           <h1 className="text-2xl mb-10">Transaction</h1>
-          <p><span className="font-bold">Transaction Hash:</span> {hash}</p>
-          <p><span className="font-bold">Sender Address:</span> {from}</p>
-          <p><span className="font-bold">Recipient Address:</span> {to}</p>
-          <p><span className="font-bold">Amount:</span> {valueParsed} ETH</p>
+          <p>
+            <span className="font-bold">Transaction Hash:</span> {hash}
+          </p>
+          <p>
+            <span className="font-bold">Sender Address:</span> {from}
+          </p>
+          <p>
+            <span className="font-bold">Recipient Address:</span> {to}
+          </p>
+          <p>
+            <span className="font-bold">Amount:</span> {valueParsed} ETH
+          </p>
         </div>
       </div>
     </div>
