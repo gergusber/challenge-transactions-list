@@ -3,6 +3,7 @@ import { useDispatch } from "react-redux";
 import { useForm, SubmitHandler } from "react-hook-form";
 import { navigate } from "./NaiveRouter";
 import { Actions } from "../types";
+import { toast } from "react-hot-toast";
 
 interface propsTransactionSender {
   sender: string;
@@ -31,27 +32,33 @@ const SendTransaction: React.FC<propsTransactionSender> = ({ sender }) => {
 
   const onTransactionSuccess = (hash: string) => {
     navigate(`/transaction/${hash}`);
+    toast.success("Transaction sent");
   };
 
   const handleDispatch = useCallback(
     ({ recipient, amount }: Inputs) => {
-      dispatch({
-        type: Actions.SendTransaction,
-        callback: onTransactionSuccess,
-        to: recipient,
-        amount,
-        sender,
-      });
+      try {
+        dispatch({
+          type: Actions.SendTransaction,
+          callback: onTransactionSuccess,
+          to: recipient,
+          amount,
+          sender,
+        });
+      } catch (error) {
+        toast.error("Invalid recipient or amount");
+        return;
+      }
     },
     [dispatch, sender]
   );
 
   const recipientValidation = (value: string) => {
-    return value.length >= 40; // Validate recipient with at least 40 characters
+    return value.length >= 40;
   };
 
   const amountValidation = (value: number) => {
-    return value > 0; // Validate amount as a positive number
+    return value > 0;
   };
 
   return (

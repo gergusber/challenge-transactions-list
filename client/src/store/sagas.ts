@@ -10,6 +10,8 @@ import {
 import apolloClient from "../apollo/client";
 import { Actions } from "../types";
 import { SaveTransaction } from "../queries";
+import toast from "react-hot-toast";
+
 type SendTransactionType = {
   callback: (_hash: string) => void;
   to: string;
@@ -64,7 +66,7 @@ function* sendTransaction({ callback, to, amount, sender }: any) {
       callback(receipt.hash);
     }
   } catch (error) {
-    console.log("ERROR TRANSACTION", error);
+    toast.success("Error in Transaction");
     throw new Error('Couldn\'t process the transaction',);
   }
 }
