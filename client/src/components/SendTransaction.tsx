@@ -1,59 +1,69 @@
-import React, { useCallback, useState } from "react";
+import React, { useCallback } from "react";
 import { useDispatch } from "react-redux";
-import { useForm } from "react-hook-form";
+import { useForm, SubmitHandler } from "react-hook-form";
 import { navigate } from "./NaiveRouter";
 import { Actions } from "../types";
 
 interface propsTransactionSender {
-  sender: string 
+  sender: string;
 }
+type Inputs = {
+  recipient: string;
+  amount: number;
+  sender: string;
+};
 
 const SendTransaction: React.FC<propsTransactionSender> = ({ sender }) => {
   const dispatch = useDispatch();
-  const { handleSubmit } = useForm();
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isValid },
+    reset,
+  } = useForm<Inputs>();
 
-  const [form, setForm] = useState({
-    sender,
-    recipient: "",
-    amount: 0,
-  });
-
-  const onSubmit = (data: any) => {
-    console.log(data);
-    handleDispatch();
-  };
-
-  const onUpdateField = (e: any) => {
-    const nextFormState = {
-      ...form,
-      [e.target.name]: e.target.value,
-    };
-    setForm(nextFormState);
+  const onSubmit: SubmitHandler<Inputs> = (data) => {
+    if (data.recipient && data.amount) {
+      handleDispatch(data);
+      reset();
+    }
   };
 
   const onTransactionSuccess = (hash: string) => {
     navigate(`/transaction/${hash}`);
   };
 
-  const handleDispatch = useCallback(() => {
-    dispatch({
-      type: Actions.SendTransaction,
-      callback: onTransactionSuccess,
-      to: form.recipient,
-      amount: form.amount,
-      sender,
-    });
-  }, [dispatch, form, sender]);
+  const handleDispatch = useCallback(
+    ({ recipient, amount }: Inputs) => {
+      dispatch({
+        type: Actions.SendTransaction,
+        callback: onTransactionSuccess,
+        to: recipient,
+        amount,
+        sender,
+      });
+    },
+    [dispatch, sender]
+  );
+
+  const recipientValidation = (value: string) => {
+    return value.length >= 40; // Validate recipient with at least 40 characters
+  };
+
+  const amountValidation = (value: number) => {
+    return value > 0; // Validate amount as a positive number
+  };
 
   return (
     <>
       <button
         data-hs-overlay="#hs-basic-modal"
-        type="button"
+        type="submit"
         className="py-3 px-4 inline-flex justify-center items-center gap-2 rounded-md border border-transparent font-semibold bg-blue-500 text-white hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all text-sm"
       >
         Send
       </button>
+
       <form onSubmit={handleSubmit(onSubmit)}>
         <div
           id="hs-basic-modal"
@@ -100,7 +110,7 @@ const SendTransaction: React.FC<propsTransactionSender> = ({ sender }) => {
                   type="text"
                   id="input-sender"
                   name="sender"
-                  value={form.sender}
+                  value={sender}
                   className="opacity-70 pointer-events-none py-3 px-4 block bg-gray-50 border-gray-800 rounded-md text-sm focus:border-blue-500 focus:ring-blue-500 w-full"
                   placeholder="Sender Address (Autocompleted)"
                   disabled
@@ -112,14 +122,19 @@ const SendTransaction: React.FC<propsTransactionSender> = ({ sender }) => {
                   Recipient:
                 </label>
                 <input
-                  type="text"
-                  id="input-recipient"
-                  value={form.recipient}
-                  name="recipient"
-                  onChange={onUpdateField}
+                  {...register("recipient", {
+                    required: true,
+                    validate: recipientValidation,
+                  })}
                   className="opacity-70  py-3 px-4 block bg-gray-50 border-gray-800 rounded-md text-sm focus:border-blue-500 focus:ring-blue-500 w-full"
                   placeholder="Recipient Address"
                 />
+                {errors.recipient && errors.recipient.type === "required" && (
+                  <span>This field is required</span>
+                )}
+                {errors.recipient && errors.recipient.type === "validate" && (
+                  <span>Recipient must be at least 40 characters</span>
+                )}
                 <label
                   htmlFor="input-amount"
                   className="block text-sm font-bold my-2"
@@ -127,14 +142,19 @@ const SendTransaction: React.FC<propsTransactionSender> = ({ sender }) => {
                   Amount:
                 </label>
                 <input
-                  type="number"
-                  id="input-amount"
-                  value={form.amount}
-                  name="amount"
-                  onChange={onUpdateField}
+                  {...register("amount", {
+                    required: true,
+                    validate: amountValidation,
+                  })}
                   className="opacity-70 py-3 px-4 block bg-gray-50 border-gray-800 rounded-md text-sm focus:border-blue-500 focus:ring-blue-500 w-full"
                   placeholder="Amount"
                 />
+                {errors.amount && errors.amount.type === "required" && (
+                  <span>This field is required</span>
+                )}
+                {errors.amount && errors.amount.type === "validate" && (
+                  <span>Amount must be a positive number</span>
+                )}
               </div>
               <div className="flex justify-end items-center gap-x-2 py-3 px-4 border-t">
                 <button
@@ -146,7 +166,16 @@ const SendTransaction: React.FC<propsTransactionSender> = ({ sender }) => {
                 </button>
                 <button
                   type="submit"
-                  className="py-3 px-4 inline-flex justify-center items-center gap-2 rounded-md border border-transparent font-semibold bg-blue-500 text-white hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all text-sm"
+                  data-hs-overlay="#hs-basic-modal"
+                  className={`py-3 px-4 inline-flex justify-center items-center gap-2 rounded-md border ${
+                    Object.keys(errors).length === 0 && isValid
+                      ? "bg-blue-500 text-white hover:bg-blue-600"
+                      : "bg-gray-300 text-gray-600 cursor-not-allowed"
+                  } focus:outline-none focus:ring-2 ${
+                    Object.keys(errors).length === 0 && isValid
+                      ? "focus:ring-blue-500 focus:ring-offset-2"
+                      : ""
+                  } transition-all text-sm`}
                 >
                   Send
                 </button>
